@@ -1,6 +1,6 @@
 # CapsLayer: An advanced library for capsule theory
 
-Capsule theory is a potential research proposed by Geoffrey E. Hinton et al, where he describes the shortcomings of the Convolutional Neural Networks and how Capsules could potentially curcumvent these problems such as "pixel attack" and create more robust Neural Network Architecture based on Capsules Layer.
+Capsule theory is a potential research proposed by Geoffrey E. Hinton et al, where he describes the shortcomings of the Convolutional Neural Networks and how Capsules could potentially circumvent these problems such as "pixel attack" and create more robust Neural Network Architecture based on Capsules Layer.
 
 We expect that this theory will definitely contribute to Deep Learning Industry and we are excited about it. For the same reason we are proud to introduce **CapsLayer**, an advanced library for the Capsule Theory, integrating capsule-relevant technologies, providing relevant analysis tools, developing related application examples, and probably most important thing: promoting the development of capsule theory. 
 

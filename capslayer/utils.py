@@ -3,8 +3,6 @@ import scipy
 import numpy as np
 import tensorflow as tf
 
-from config import cfg
-
 
 def reduce_sum(input_tensor, axis=None, keepdims=False, name=None):
     try:
@@ -29,7 +27,7 @@ def euclidean_norm(input, axis=2, keepdims=True, epsilon=True):
     return(norm)
 
 
-def load_mnist(is_training=True):
+def load_mnist(batch_size, is_training=True):
     path = os.path.join('model', 'data', 'mnist')
     if is_training:
         fd = open(os.path.join(path, 'train-images-idx3-ubyte'))
@@ -46,8 +44,8 @@ def load_mnist(is_training=True):
         valX = trainX[55000:, ] / 255.
         valY = trainY[55000:]
 
-        num_tr_batch = 55000 // cfg.batch_size
-        num_val_batch = 5000 // cfg.batch_size
+        num_tr_batch = 55000 // batch_size
+        num_val_batch = 5000 // batch_size
 
         return trX, trY, num_tr_batch, valX, valY, num_val_batch
     else:
@@ -59,11 +57,11 @@ def load_mnist(is_training=True):
         loaded = np.fromfile(file=fd, dtype=np.uint8)
         teY = loaded[8:].reshape((10000)).astype(np.int32)
 
-        num_te_batch = 10000 // cfg.batch_size
+        num_te_batch = 10000 // batch_size
         return teX / 255., teY, num_te_batch
 
 
-def load_fashion_mnist(is_training=True):
+def load_fashion_mnist(batch_size, is_training=True):
     path = os.path.join('model', 'data', 'fashion-mnist')
     if is_training:
         fd = open(os.path.join(path, 'train-images-idx3-ubyte'))
@@ -80,8 +78,8 @@ def load_fashion_mnist(is_training=True):
         valX = trainX[55000:, ] / 255.
         valY = trainY[55000:]
 
-        num_tr_batch = 55000 // cfg.batch_size
-        num_val_batch = 5000 // cfg.batch_size
+        num_tr_batch = 55000 // batch_size
+        num_val_batch = 5000 // batch_size
 
         return trX, trY, num_tr_batch, valX, valY, num_val_batch
     else:
@@ -93,37 +91,37 @@ def load_fashion_mnist(is_training=True):
         loaded = np.fromfile(file=fd, dtype=np.uint8)
         teY = loaded[8:].reshape((10000)).astype(np.int32)
 
-        num_te_batch = 10000 // cfg.batch_size
+        num_te_batch = 10000 // batch_size
         return teX / 255., teY, num_te_batch
 
 
-def load_smallNORB(is_training=True):
+def load_smallNORB(batch_size, is_training=True):
     pass
 
 
-def load_data(dataset, is_training=True, one_hot=False):
-    if cfg.dataset == 'mnist':
-        return load_mnist(is_training)
-    elif cfg.dataset == 'fashion-mnist':
-        return load_fashion_mnist(is_training)
-    elif cfg.dataset == 'smallNORB':
-        return load_smallNORB(is_training)
-    else:
-        raise Exception('Invalid dataset, please check the name of dataset:', cfg.dataset)
-
-
-def get_batch_data(dataset):
+def load_data(dataset, batch_size, is_training=True, one_hot=False):
     if dataset == 'mnist':
-        trX, trY, num_tr_batch, valX, valY, num_val_batch = load_mnist(is_training=True)
+        return load_mnist(batch_size, is_training)
     elif dataset == 'fashion-mnist':
-        trX, trY = load_fashion_mnist(kind='train')
+        return load_fashion_mnist(batch_size, is_training)
+    elif dataset == 'smallNORB':
+        return load_smallNORB(batch_size, is_training)
+    else:
+        raise Exception('Invalid dataset, please check the name of dataset:', dataset)
+
+
+def get_batch_data(dataset, batch_size, num_threads):
+    if dataset == 'mnist':
+        trX, trY, num_tr_batch, valX, valY, num_val_batch = load_mnist(batch_size, is_training=True)
+    elif dataset == 'fashion-mnist':
+        trX, trY = load_fashion_mnist(batch_size, is_training=True)
     elif dataset == 'smallNORB':
         trX, trY == load_smallNORB(kind='train')
     data_queues = tf.train.slice_input_producer([trX, trY])
-    X, Y = tf.train.shuffle_batch(data_queues, num_threads=cfg.num_threads,
-                                  batch_size=cfg.batch_size,
-                                  capacity=cfg.batch_size * 64,
-                                  min_after_dequeue=cfg.batch_size * 32,
+    X, Y = tf.train.shuffle_batch(data_queues, num_threads=num_threads,
+                                  batch_size=batch_size,
+                                  capacity=batch_size * 64,
+                                  min_after_dequeue=batch_size * 32,
                                   allow_smaller_final_batch=False)
 
     return(X, Y)

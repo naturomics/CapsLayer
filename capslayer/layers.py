@@ -1,7 +1,8 @@
+# -*- coding: utf8 -*-
+
 import tensorflow as tf
 from functools import reduce
 
-from config import cfg
 from capslayer.utils import get_transformation_matrix_shape
 from capslayer.utils import euclidean_norm
 from capslayer.ops import routing
@@ -24,10 +25,11 @@ def fully_connected(inputs, activation,
     '''
     in_pose_shape = inputs.get_shape().as_list()
     num_inputs = in_pose_shape[1]
+    batch_size = in_pose_shape[0]
     T_size = get_transformation_matrix_shape(in_pose_shape[-2:], out_caps_shape)
     T_shape = [1, num_inputs, num_outputs] + T_size
     T_matrix = tf.get_variable("transformation_matrix", shape=T_shape)
-    T_matrix = tf.tile(T_matrix, [cfg.batch_size, 1, 1, 1, 1])
+    T_matrix = tf.tile(T_matrix, [batch_size, 1, 1, 1, 1])
     inputs = tf.tile(tf.expand_dims(inputs, axis=2), [1, 1, num_outputs, 1, 1])
     with tf.variable_scope('transformation'):
         # vote: [batch_size, num_inputs, num_outputs] + out_caps_shape
@@ -35,10 +37,10 @@ def fully_connected(inputs, activation,
     with tf.variable_scope('routing'):
         if routing_method == 'EMRouting':
             activation = tf.reshape(activation, shape=activation.get_shape().as_list() + [1, 1])
-            vote = tf.reshape(vote, shape=[cfg.batch_size, num_inputs, num_outputs, -1])
+            vote = tf.reshape(vote, shape=[batch_size, num_inputs, num_outputs, -1])
             pose, activation = routing(vote, activation, num_outputs, out_caps_shape, routing_method)
-            pose = tf.reshape(pose, shape=[cfg.batch_size, num_outputs] + out_caps_shape)
-            activation = tf.reshape(activation, shape=[cfg.batch_size, -1])
+            pose = tf.reshape(pose, shape=[batch_size, num_outputs] + out_caps_shape)
+            activation = tf.reshape(activation, shape=[batch_size, -1])
         elif routing_method == 'DynamicRouting':
             pose, _ = routing(vote, activation, num_outputs=num_outputs, out_caps_shape=out_caps_shape, method=routing_method)
             pose = tf.squeeze(pose, axis=1)
@@ -115,6 +117,7 @@ def conv2d(in_pose,
     # do some preparation stuff
     in_pose_shape = in_pose.get_shape().as_list()
     in_caps_shape = in_pose_shape[-2:]
+    batch_size = in_pose_shape[0]
     in_channels = in_pose_shape[3]
 
     T_size = get_transformation_matrix_shape(in_caps_shape, out_caps_shape)
@@ -131,11 +134,11 @@ def conv2d(in_pose,
         h_stride = strides[0]
         w_stride = strides[1]
     num_inputs = h_kernel_size * w_kernel_size * in_channels
-    batch_shape = [cfg.batch_size, h_kernel_size, w_kernel_size, in_channels]
+    batch_shape = [batch_size, h_kernel_size, w_kernel_size, in_channels]
     T_shape = (1, num_inputs, filters) + tuple(T_size)
 
     T_matrix = tf.get_variable("transformation_matrix", shape=T_shape, regularizer=regularizer)
-    T_matrix_batched = tf.tile(T_matrix, [cfg.batch_size, 1, 1, 1, 1])
+    T_matrix_batched = tf.tile(T_matrix, [batch_size, 1, 1, 1, 1])
 
     h_step = int((in_pose_shape[1] - h_kernel_size) / h_stride + 1)
     w_step = int((in_pose_shape[2] - w_kernel_size) / w_stride + 1)
@@ -154,10 +157,10 @@ def conv2d(in_pose,
                 size = batch_shape + in_caps_shape
                 w_s = j * w_stride
                 pose_sliced = in_pose[:, h_s:h_e, w_s:(w_s + w_kernel_size), :, :, :]
-                pose_reshaped = tf.reshape(pose_sliced, shape=[cfg.batch_size, num_inputs, 1] + in_caps_shape)
-                shape = [cfg.batch_size, num_inputs, filters] + in_caps_shape
+                pose_reshaped = tf.reshape(pose_sliced, shape=[batch_size, num_inputs, 1] + in_caps_shape)
+                shape = [batch_size, num_inputs, filters] + in_caps_shape
                 batch_pose = tf.multiply(pose_reshaped, tf.constant(1., shape=shape))
-                vote = tf.reshape(tf.matmul(T_matrix_batched, batch_pose), shape=[cfg.batch_size, num_inputs, filters, -1])
+                vote = tf.reshape(tf.matmul(T_matrix_batched, batch_pose), shape=[batch_size, num_inputs, filters, -1])
                 # do Coordinate Addition. Note: not yet completed
                 if coordinate_addition:
                     x = j / w_step
@@ -167,9 +170,9 @@ def conv2d(in_pose,
                 if i > 0 or j > 0:
                     scope.reuse_variables()
                 begin = [0, i * h_stride, j * w_stride, 0]
-                size = [cfg.batch_size, h_kernel_size, w_kernel_size, in_channels]
+                size = [batch_size, h_kernel_size, w_kernel_size, in_channels]
                 prob = tf.slice(activation, begin, size)
-                prob = tf.reshape(prob, shape=[cfg.batch_size, -1, 1, 1])
+                prob = tf.reshape(prob, shape=[batch_size, -1, 1, 1])
                 pose, prob = routing(vote, prob, filters, out_caps_shape, method="EMRouting", regularizer=regularizer)
             col_pose.append(pose)
             col_prob.append(prob)
