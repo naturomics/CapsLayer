@@ -114,9 +114,9 @@ def get_batch_data(dataset, batch_size, num_threads):
     if dataset == 'mnist':
         trX, trY, num_tr_batch, valX, valY, num_val_batch = load_mnist(batch_size, is_training=True)
     elif dataset == 'fashion-mnist':
-        trX, trY = load_fashion_mnist(batch_size, is_training=True)
+        trX, trY, num_tr_batch, valX, valY, num_val_batch = load_fashion_mnist(batch_size, is_training=True)
     elif dataset == 'smallNORB':
-        trX, trY == load_smallNORB(kind='train')
+        trX, trY, num_tr_batch, valX, valY, num_val_batch = load_smallNORB(batch_size, is_training=True)
     data_queues = tf.train.slice_input_producer([trX, trY])
     X, Y = tf.train.shuffle_batch(data_queues, num_threads=num_threads,
                                   batch_size=batch_size,
