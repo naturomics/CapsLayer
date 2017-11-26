@@ -52,7 +52,7 @@ howpublished = {\url{http://naturomics.com/CapsLayer}},
 }
 ```
 
-> **Note**
+> **Note:**
 > We are considering to write a paper for this project, but before that, cite the above Bibtex entry.
 
 
