@@ -15,8 +15,8 @@ Capsule theory is a potential research proposed by Geoffrey E. Hinton, we can ex
 - Datasets support:
   - [x] [MNIST](http://yann.lecun.com/exdb/mnist)
   - [x] [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist)
-	- [ ] [small NORB](https://cs.nyu.edu/~ylclab/data/norb-v1.0-small)
-	- [ ] [CIFAR-10](http://www.cs.toronto.edu/~kriz/cifar.html)
+  - [ ] [small NORB](https://cs.nyu.edu/~ylclab/data/norb-v1.0-small)
+  - [ ] [CIFAR-10](http://www.cs.toronto.edu/~kriz/cifar.html)
 
 - Capsule Nets Model examples:
 	- [x] [Dynamics routing between capsules](https://arxiv.org/abs/1710.09829)
