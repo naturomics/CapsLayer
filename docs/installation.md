@@ -3,16 +3,18 @@ CapsLayer is build on the top of TensorFlow with its python API, so you need pyt
 
 ## Step 1: Install dependencies
 - TesorFlow 
+
 Follow the [Tensorflow installation instructions](https://www.tensorflow.org/install)[for China](https://tensorflow.google.cn/install/)
 
 - NumPy and SciPy
-system-level installation:
+
+	system-level installation:
 ```
 $ sudo pip install numpy
 $ sudo pip install scipy
 ```
 
-user-level installation:
+	user-level installation:
 ```
 $ pip install --user numpy
 $ pip install --user scipy
@@ -31,4 +33,5 @@ Follow the instructions in [the Model Section](model) to run your first CapsLaye
 
 
 # TODO
+
 - [] Test on Windows
