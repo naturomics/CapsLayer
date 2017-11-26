@@ -1,6 +1,10 @@
 # CapsLayer: An advanced library for capsule theory
 
-Capsule theory is a potential research proposed by Geoffrey E. Hinton, we can expect that this theory will bring new changes to Deep Learning. And **CapsLayer** is an advanced library for the capsule theory, integrating capsule-relevant technologies, providing relevant analysis tools, developing related application examples, and the most important thing is, promoting the development of capsule theory. This library is based on [Tensorflow](www.tensorflow.org) and has a similar API with it but designed for capsule layer/model.
+Capsule theory is a potential research proposed by Geoffrey E. Hinton et al, where he describes the shortcomings of the Convolutional Neural Networks and how Capsules could potentially curcumvent these problems such as "pixel attack" and create more robust Neural Network Architecture baded on Capsules Layer.
+
+We expect that this theory will definitely contribute to Deep Learning Industry and we are excited about it. For the same reason we are proud to introduce **CapsLayer**, an advanced library for the Capsule Theory, integrating capsule-relevant technologies, providing relevant analysis tools, developing related application examples, and probably most important thing: promoting the development of capsule theory. 
+
+This library is based on [Tensorflow](www.tensorflow.org) and has a similar API with it but designed for capsule layer/model. We will soon be testing it with TensorFlow 1.4.x as well as TensorFlow 1.5.x which introduces several imperative modules such as Eager Execution etc.
 
 
 # Features
@@ -32,7 +36,7 @@ If you want us to support more features, please tell us by opening an Issue or s
 # Documentation
 - [Installation](docs/installation.md)
 - [Tutorials](docs/tutorials.md)
-- [theoretical analysis](docs/article.md)
+- [Theoretical Analysis](docs/article.md)
 
 
 # Contributions
