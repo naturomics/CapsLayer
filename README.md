@@ -20,7 +20,7 @@ Capsule theory is a potential research proposed by Geoffrey E. Hinton, we can ex
 
 - Capsule Nets Model examples:
 	- [x] [Dynamics routing between capsules](https://arxiv.org/abs/1710.09829)
-	- [ ] [matrix capsule with EM routing](https://openreview.net/pdf?id=HJWLfGWRb)
+	- [ ] [matrix capsule with EM routing](https://openreview.net/pdf?id=HJWLfGWRb)(will be released soon)
 
 - Algorithm support:
 	- [x] Routing-by-agreement: including EM Routing and Dynamic Routing
