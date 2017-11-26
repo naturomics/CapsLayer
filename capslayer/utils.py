@@ -151,11 +151,3 @@ def mergeImgs(images, size):
 
 def get_transformation_matrix_shape(in_pose_shape, out_pose_shape):
     return([out_pose_shape[0], in_pose_shape[0]])
-
-if __name__ == '__main__':
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
-        trX, trY, num_tr_batch, valX, valY, num_val_batch = load_data('mnist')
-        trX = trX[0:32, :]
-        print(trX.shape)
-        print(trX.dtype)
