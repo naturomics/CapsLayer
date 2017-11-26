@@ -28,7 +28,7 @@ class CapsNet(object):
         self.graph = tf.Graph()
         with self.graph.as_default():
             if cfg.is_training:
-                self.X, self.labels = get_batch_data(cfg.dataset)
+                self.X, self.labels = get_batch_data(cfg.dataset, cfg.batch_size, cfg.num_threads)
                 self.x = tf.reshape(self.X, shape=[cfg.batch_size, self.height, self.width, self.channels])
                 self.Y = tf.one_hot(self.labels, depth=self.num_label, axis=1, dtype=tf.float32)
 

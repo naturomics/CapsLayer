@@ -28,7 +28,7 @@ def euclidean_norm(input, axis=2, keepdims=True, epsilon=True):
 
 
 def load_mnist(batch_size, is_training=True):
-    path = os.path.join('model', 'data', 'mnist')
+    path = os.path.join('models', 'data', 'mnist')
     if is_training:
         fd = open(os.path.join(path, 'train-images-idx3-ubyte'))
         loaded = np.fromfile(file=fd, dtype=np.uint8)
@@ -62,7 +62,7 @@ def load_mnist(batch_size, is_training=True):
 
 
 def load_fashion_mnist(batch_size, is_training=True):
-    path = os.path.join('model', 'data', 'fashion-mnist')
+    path = os.path.join('models', 'data', 'fashion-mnist')
     if is_training:
         fd = open(os.path.join(path, 'train-images-idx3-ubyte'))
         loaded = np.fromfile(file=fd, dtype=np.uint8)

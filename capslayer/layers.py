@@ -1,4 +1,6 @@
-# -*- coding: utf8 -*-
+'''
+This module provides a set of high-level neural networks layers.
+'''
 
 import tensorflow as tf
 from functools import reduce
