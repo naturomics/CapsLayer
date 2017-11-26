@@ -36,7 +36,7 @@ If you want us to support more features, please tell us by opening an Issue or s
 # Documentation
 - [Installation](docs/installation.md)
 - [Tutorials](docs/tutorials.md)
-- [Theoretical Analysis](docs/article.md)
+- [Theoretical Analysis](docs/articles.md)
 
 
 # Contributions
