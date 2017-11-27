@@ -25,4 +25,7 @@ $ python models/tools/download_data.py --dataset mnist/fashion-mnist
 $ python models/main.py --dataset mnist/fashion-mnist [--batch_size=128]
 ```
 
+**Step 4.** Visualize the results with `tensorboard` or tools provided by this project. The following is an example plotted with our `plot_activation.R` tool:
+![activation_map](assets/results_mnist_vecCapsNetactivations.gif)
+
 If you want to apply these models to the datasets that have not yet been supported, please see [the tutorial](https://github.com/naturomics/CapsLayer/blob/master/docs/tutorials.md) for instructions on how to modify them
