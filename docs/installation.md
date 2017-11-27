@@ -29,7 +29,7 @@ $ git clone https://github.com/naturomics/CapsLayer.git (In this way you should 
 
 ## Step 3: *Try your first CapsLayer program*
 
-Follow the instructions in [the Model Section](model) to run your first CapsLayer model.
+Follow the instructions in [the Model Section](https://github.com/naturomics/CapsLayer/tree/master/models) to run your first CapsLayer model.
 
 
 # TODO
