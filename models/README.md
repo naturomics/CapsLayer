@@ -15,14 +15,16 @@ $ git clone https://github.com/naturomics/CapsLayer.git
 $ cd CapsLayer
 ```
 
-**Step 2.** Download dataset with the script `download_data.py`(not completed yet)
+**Step 2.** Download dataset with the script `download_data.py`(now support mnist, fashion-mnist, smallNORB datasets)
 ```
-$ python models/tools/download_data.py --dataset mnist/fashion-mnist
+$ python models/tools/download_data.py --dataset mnist --save_to models/data/mnist
+$ python models/tools/download_data.py --dataset fashion-mnist --save_to models/data/fashion-mnist
+$ python models/tools/download_data.py --dataset smallNORB --save_to models/data/smallNORB
 ```
 
 **Step 3.** Training your model
 ```
-$ python models/main.py --dataset mnist/fashion-mnist [--batch_size=128]
+$ python models/main.py --dataset name_of_dataset [--batch_size=32, ...]
 ```
 
 **Step 4.** Visualize the results with `tensorboard` or tools provided by this project. The following is an example plotted with our `plot_activation.R` tool:
