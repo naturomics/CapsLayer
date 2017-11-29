@@ -39,6 +39,12 @@ class CapsNet(object):
                 self.global_step = tf.Variable(1, name='global_step', trainable=False)
                 self.optimizer = tf.train.AdamOptimizer()
                 self.train_op = self.optimizer.minimize(self.loss, global_step=self.global_step)
+            else:
+                self.X = tf.placeholder(tf.float32, shape=(cfg.batch_size, None))
+                self.x = tf.reshape(self.X, shape=[cfg.batch_size, self.height, self.width, self.channels])
+                self.labels = tf.placeholder(tf.int32, shape=(cfg.batch_size, ))
+                self.Y = tf.one_hot(self.labels, depth=self.num_label, axis=1, dtype=tf.float32)
+                self.build_arch()
 
             with tf.variable_scope('accuracy'):
                 logits_idx = tf.to_int32(tf.argmax(softmax(self.activation, axis=1), axis=1))

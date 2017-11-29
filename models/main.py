@@ -38,24 +38,22 @@ def save_to():
         if os.path.exists(test_acc):
             os.remove(test_acc)
         fd_test_acc = open(test_acc, 'w')
-        fd_test_acc.write('step,test_acc\n')
+        fd_test_acc.write('test_acc\n')
+        return(fd_test_acc)
 
 
-def train(model, supervisor):
+def train(model, supervisor, num_label):
     trX, trY, num_tr_batch, valX, valY, num_val_batch = load_data(cfg.dataset, cfg.batch_size, is_training=True)
     Y = valY[:num_val_batch * cfg.batch_size].reshape((-1, 1))
 
-    if cfg.dataset == 'mnist' or cfg.dataset == 'fashion-mnist':
-        num_label = 10
-    elif cfg.dataset == 'smallNORB':
-        num_label = 5
     fd_train_acc, fd_loss, fd_val_acc = save_to()
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     with supervisor.managed_session(config=config) as sess:
         print("\nNote: all of results will be saved to directory: " + cfg.results)
         for epoch in range(cfg.epoch):
-            print('Training for epoch ' + str(epoch) + '/' + str(cfg.epoch) + ':')
+            sys.stdout.write('Training for epoch ' + str(epoch) + '/' + str(cfg.epoch) + ':')
+            sys.stdout.flush()
             if supervisor.should_stop():
                 print('supervisor stoped!')
                 break
@@ -97,26 +95,46 @@ def train(model, supervisor):
         fd_loss.close()
 
 
-def evaluation(model, supervisor):
-    pass
+def evaluation(model, supervisor, num_label):
+    teX, teY, num_te_batch = load_data(cfg.dataset, cfg.batch_size, is_training=False)
+    fd_test_acc = save_to()
+    with supervisor.managed_session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
+        supervisor.saver.restore(sess, tf.train.latest_checkpoint(cfg.logdir))
+        tf.logging.info('Model restored!')
+
+        test_acc = 0
+        prob = np.zeros((num_te_batch * cfg.batch_size, num_label))
+        for i in tqdm(range(num_te_batch), total=num_te_batch, ncols=70, leave=False, unit='b'):
+            start = i * cfg.batch_size
+            end = start + cfg.batch_size
+            acc, prob[start:end, :] = sess.run([model.accuracy, model.activation], {model.X: teX[start:end], model.labels: teY[start:end]})
+            test_acc += acc
+        test_acc = test_acc / (cfg.batch_size * num_te_batch)
+        np.savetxt(cfg.results + '/prob_test.txt', prob, fmt='%1.2f')
+        print('Classification probability for each category has been saved to ' + cfg.results + '/prob_test.txt')
+        fd_test_acc.write(str(test_acc))
+        fd_test_acc.close()
+        print('Test accuracy has been saved to ' + cfg.results + '/test_accuracy.txt')
 
 
 def main(_):
     if cfg.dataset == 'mnist' or cfg.dataset == 'fashion-mnist':
         tf.logging.info(' Loading Graph...')
+        num_label = 10
         model = CapsNet(height=28, width=28, channels=1, num_label=10)
     elif cfg.dataset == 'smallNORB':
         model = CapsNet(height=32, width=32, channaels=3, num_label=5)
+        num_label = 5
     tf.logging.info(' Graph loaded')
 
     sv = tf.train.Supervisor(graph=model.graph, logdir=cfg.logdir, save_model_secs=0)
 
     if cfg.is_training:
         tf.logging.info(' Start trainging...')
-        train(model, sv)
+        train(model, sv, num_label)
         tf.logging.info('Training done')
     else:
-        evaluation(model, sv)
+        evaluation(model, sv, num_label)
 
 if __name__ == "__main__":
     model = 'vectorCapsNet'
