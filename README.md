@@ -11,6 +11,7 @@ This library is based on [Tensorflow](https://www.tensorflow.org) and has a simi
 
 - TensorFlow-like API for building Neural Nets block:
 	- [x] capslayer.layers.conv2d
+	- [ ] capslayer.layers.conv1d
 	- [x] capslayer.layers.fully_connected
 	- [x] capslayer.layers.primaryCaps
 	- [x] capslayer.losses.spread_loss
