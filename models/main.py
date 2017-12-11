@@ -123,7 +123,7 @@ def main(_):
         num_label = 10
         model = CapsNet(height=28, width=28, channels=1, num_label=10)
     elif cfg.dataset == 'smallNORB':
-        model = CapsNet(height=32, width=32, channaels=3, num_label=5)
+        model = CapsNet(height=32, width=32, channels=3, num_label=5)
         num_label = 5
     tf.logging.info(' Graph loaded')
 
