@@ -1,5 +1,5 @@
 local*
-model/data*
+model*/data*
 *logdir*
 *__pycache__
-model/results*
+model*/results*
