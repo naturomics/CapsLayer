@@ -2,3 +2,4 @@ local*
 model/data*
 *logdir*
 *__pycache__
+model/results*
