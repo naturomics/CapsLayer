@@ -62,16 +62,19 @@ def download_and_uncompress_zip(URL, dataset_dir, force=False):
 
 def start_download(dataset, save_to, force):
     if dataset == 'mnist':
+        print("Start downloading dataset MNIST:")
         download_and_uncompress_zip(MNIST_TRAIN_IMGS_URL, save_to, force)
         download_and_uncompress_zip(MNIST_TRAIN_LABELS_URL, save_to, force)
         download_and_uncompress_zip(MNIST_TEST_IMGS_URL, save_to, force)
         download_and_uncompress_zip(MNIST_TEST_LABELS_URL, save_to, force)
     elif dataset == 'fashion-mnist':
+        print("Start downloading dataset Fashion MNIST:")
         download_and_uncompress_zip(FASHION_MNIST_TRAIN_IMGS_URL, save_to, force)
         download_and_uncompress_zip(FASHION_MNIST_TRAIN_LABELS_URL, save_to, force)
         download_and_uncompress_zip(FASHION_MNIST_TEST_IMGS_URL, save_to, force)
         download_and_uncompress_zip(FASHION_MNIST_TEST_LABELS_URL, save_to, force)
     elif dataset == 'smallNORB':
+        print("Start downloading dataset small NORB:")
         download_and_uncompress_zip(SMALLNORB_TRAIN_DAT_URL, save_to, force)
         download_and_uncompress_zip(SMALLNORB_TRAIN_CAT_URL, save_to, force)
         download_and_uncompress_zip(SMALLNORB_TRAIN_INFO_URL, save_to, force)
