@@ -186,3 +186,75 @@ def conv2d(in_pose,
     out_activation = tf.concat(out_activation, axis=1)
 
     return(out_pose, out_activation)
+
+
+def conv1d(in_pose,
+           activation,
+           filters,
+           out_caps_shape,
+           kernel_size,
+           strides=1,
+           coordinate_addition=False,
+           regularizer=None,
+           reuse=None):
+    """A capsule convolutional layer.
+    Args:
+        in_pose: A tensor with shape [batch_size, in_width, in_channels] + in_caps_shape.
+        activation: A tensor with shape [batch_size, in_width, in_channels]
+        filters: ...
+        out_caps_shape: ...
+        kernel_size: int
+        strides: int
+        coordinate_addition: ...
+        regularizer: apply regularization on a newly created variable and add the variable to the collection tf.GraphKeys.REGULARIZATION_LOSSES.
+        reuse: ...
+    Returns:
+        out_pose: A tensor with shape [batch_size, out_height, out_height, out_channals] + out_caps_shape,
+        out_activation: A tensor with shape [batch_size, out_height, out_height, out_channels]
+    """
+    # do some preparation stuff
+    in_pose_shape = in_pose.get_shape().as_list()
+    in_caps_shape = in_pose_shape[-2:]
+    batch_size = in_pose_shape[0]
+    in_channels = in_pose_shape[2]
+
+    T_size = get_transformation_matrix_shape(in_caps_shape, out_caps_shape)
+    w_kernel_size = kernel_size
+    w_stride = strides
+    num_inputs = w_kernel_size * in_channels
+    T_shape = (1, num_inputs, filters) + tuple(T_size)
+
+    T_matrix = tf.get_variable("transformation_matrix", shape=T_shape, regularizer=regularizer)
+    T_matrix_batched = tf.tile(T_matrix, [batch_size, 1, 1, 1, 1])
+
+    w_step = int((in_pose_shape[2] - w_kernel_size) / w_stride + 1)
+    out_pose = []
+    out_activation = []
+    # start to do capsule convolution.
+    # Note: there should be another way more computationally efficient to do this
+    for j in range(w_step):
+        with tf.variable_scope("transformation"):
+            w_s = j * w_stride
+            pose_sliced = in_pose[:, w_s:(w_s + w_kernel_size), :, :, :]
+            pose_reshaped = tf.reshape(pose_sliced, shape=[batch_size, num_inputs, 1] + in_caps_shape)
+            shape = [batch_size, num_inputs, filters] + in_caps_shape
+            batch_pose = tf.multiply(pose_reshaped, tf.constant(1., shape=shape))
+            vote = tf.reshape(tf.matmul(T_matrix_batched, batch_pose), shape=[batch_size, num_inputs, filters, -1])
+            # do Coordinate Addition. Note: not yet completed
+            if coordinate_addition:
+                x = j / w_step
+
+        with tf.variable_scope("routing") as scope:
+            if i > 0 or j > 0:
+                scope.reuse_variables()
+            begin = [0, j * w_stride, 0]
+            size = [batch_size, w_kernel_size, in_channels]
+            prob = tf.slice(activation, begin, size)
+            prob = tf.reshape(prob, shape=[batch_size, -1, 1, 1])
+            pose, prob = routing(vote, prob, filters, out_caps_shape, method="EMRouting", regularizer=regularizer)
+        out_pose.append(pose)
+        out_activation.append(prob)
+    out_pose = tf.concat(out_pose, axis=1)
+    out_activation = tf.concat(out_activation, axis=1)
+
+    return out_pose, out_activation
