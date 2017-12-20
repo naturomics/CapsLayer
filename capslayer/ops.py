@@ -13,7 +13,7 @@ def squash(vector):
     Returns:
         A tensor with the same shape as vector but squashed in 'vec_len' dimension.
     '''
-    squared_norm = reduce_sum(tf.square(vector), axis=-2, keepdims=True)
+    squared_norm = reduce_sum(tf.square(vector), axis=-2, keep_dims=True)
     scalar_factor = squared_norm / (1 + squared_norm) / tf.sqrt(squared_norm + epsilon)
     return(scalar_factor * vector)
 
@@ -69,10 +69,10 @@ def routing(vote,
             with tf.variable_scope('iter_' + str(r_iter)):
                 coef = softmax(B, axis=2)
                 if r_iter == num_iter - 1:
-                    s = reduce_sum(tf.multiply(coef, vote), axis=1, keepdims=True)
+                    s = reduce_sum(tf.multiply(coef, vote), axis=1, keep_dims=True)
                     pose = squash(s)
                 else:
-                    s = reduce_sum(tf.multiply(coef, vote_stopped), axis=1, keepdims=True)
+                    s = reduce_sum(tf.multiply(coef, vote_stopped), axis=1, keep_dims=True)
                     pose = squash(s)
                     shape = [batch_size, vote.shape[1].value, num_outputs] + out_caps_shape
                     pose = tf.multiply(pose, tf.constant(1., shape=shape))
@@ -100,14 +100,14 @@ def M_step(R, activation, vote, lambda_val=0.9, regularizer=None):
     batch_size = vote.shape[0].value
     # line 2
     R = tf.multiply(R, activation)
-    R_sum_i = tf.reduce_sum(R, axis=1, keepdims=True) + epsilon
+    R_sum_i = tf.reduce_sum(R, axis=1, keep_dims=True) + epsilon
 
     # line 3
     # mean: [batch_size, 1, num_outputs, H]
-    pose = tf.reduce_sum(R * vote, axis=1, keepdims=True) / R_sum_i
+    pose = tf.reduce_sum(R * vote, axis=1, keep_dims=True) / R_sum_i
 
     # line 4
-    stddev = tf.sqrt(tf.reduce_sum(R * tf.square(vote - pose), axis=1, keepdims=True) / R_sum_i + epsilon)
+    stddev = tf.sqrt(tf.reduce_sum(R * tf.square(vote - pose), axis=1, keep_dims=True) / R_sum_i + epsilon)
 
     # line 5, cost: [batch_size, 1, num_outputs, H]
     H = vote.shape[-1].value
@@ -116,7 +116,7 @@ def M_step(R, activation, vote, lambda_val=0.9, regularizer=None):
 
     # line 6
     beta_a = tf.get_variable('beta_a', shape=[batch_size, 1, pose.shape[2], 1], regularizer=regularizer)
-    activation = tf.nn.sigmoid(lambda_val * (beta_a - tf.reduce_sum(cost, axis=3, keepdims=True)))
+    activation = tf.nn.sigmoid(lambda_val * (beta_a - tf.reduce_sum(cost, axis=3, keep_dims=True)))
 
     return(pose, stddev, activation)
 
@@ -136,10 +136,10 @@ def E_step(pose, stddev, activation, vote):
     '''
     # line 2
     var = tf.square(stddev)
-    x = tf.reduce_sum(tf.square(vote - pose) / (2 * var), axis=-1, keepdims=True)
-    peak_height = 1 / (tf.reduce_prod(tf.sqrt(2 * np.pi * var + epsilon), axis=-1, keepdims=True) + epsilon)
+    x = tf.reduce_sum(tf.square(vote - pose) / (2 * var), axis=-1, keep_dims=True)
+    peak_height = 1 / (tf.reduce_prod(tf.sqrt(2 * np.pi * var + epsilon), axis=-1, keep_dims=True) + epsilon)
     P = peak_height * tf.exp(-x)
 
     # line 3
-    R = tf.nn.softmax(activation * P, axis=2)
+    R = tf.nn.softmax(activation * P, dim=2)
     return(R)
