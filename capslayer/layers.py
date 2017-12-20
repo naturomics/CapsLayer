@@ -225,6 +225,7 @@ def conv1d(in_pose,
     T_shape = (1, num_inputs, filters) + tuple(T_size)
 
     T_matrix = tf.get_variable("transformation_matrix", shape=T_shape, regularizer=regularizer)
+
     T_matrix_batched = tf.tile(T_matrix, [batch_size, 1, 1, 1, 1])
 
     w_step = int((in_pose_shape[2] - w_kernel_size) / w_stride + 1)
@@ -245,7 +246,7 @@ def conv1d(in_pose,
                 x = j / w_step
 
         with tf.variable_scope("routing") as scope:
-            if i > 0 or j > 0:
+            if j > 0:
                 scope.reuse_variables()
             begin = [0, j * w_stride, 0]
             size = [batch_size, w_kernel_size, in_channels]
