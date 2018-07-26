@@ -1,4 +1,6 @@
 local*
+dist
+*.egg-info
 model*/data*
 *logdir*
 *__pycache__

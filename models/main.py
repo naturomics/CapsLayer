@@ -1,23 +1,41 @@
+# Copyright 2018 The CapsLayer Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==========================================================================
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import os
-import sys
+import time
 import numpy as np
 import tensorflow as tf
-from tqdm import tqdm
-
-sys.path.append('..')
-sys.path.append('.')
+from tensorflow.python.client import timeline
+from importlib import import_module
+from capslayer.plotlib import plot_activation
 
 from config import cfg
-from capslayer.utils import load_data
 
 
-def save_to():
-    if not os.path.exists(cfg.results):
-        os.mkdir(cfg.results)
-    if cfg.is_training:
-        loss = cfg.results + '/loss.csv'
-        train_acc = cfg.results + '/train_acc.csv'
-        val_acc = cfg.results + '/val_acc.csv'
+def save_to(is_training):
+    os.makedirs(os.path.join(cfg.results_dir, "activations"), exist_ok=True)
+    os.makedirs(os.path.join(cfg.results_dir, "timelines"), exist_ok=True)
+
+    if is_training:
+        loss = os.path.join(cfg.results_dir, 'loss.csv')
+        train_acc = os.path.join(cfg.results_dir, 'train_acc.csv')
+        val_acc = os.path.join(cfg.results_dir, 'val_acc.csv')
 
         if os.path.exists(val_acc):
             os.remove(val_acc)
@@ -32,116 +50,183 @@ def save_to():
         fd_loss.write('step,loss\n')
         fd_val_acc = open(val_acc, 'w')
         fd_val_acc.write('step,val_acc\n')
-        return(fd_train_acc, fd_loss, fd_val_acc)
+        fd = {"train_acc": fd_train_acc,
+              "loss": fd_loss,
+              "val_acc": fd_val_acc}
     else:
-        test_acc = cfg.results + '/test_acc.csv'
+        test_acc = os.path.jion(cfg.results, 'test_acc.csv')
         if os.path.exists(test_acc):
             os.remove(test_acc)
         fd_test_acc = open(test_acc, 'w')
         fd_test_acc.write('test_acc\n')
-        return(fd_test_acc)
+        fd = {"test_acc": fd_test_acc}
+
+    return(fd)
 
 
-def train(model, supervisor, num_label):
-    trX, trY, num_tr_batch, valX, valY, num_val_batch = load_data(cfg.dataset, cfg.batch_size, is_training=True)
-    Y = valY[:num_val_batch * cfg.batch_size].reshape((-1, 1))
+def train(model, data_loader):
+    # Setting up model
+    training_iterator = data_loader(cfg.batch_size, mode="train")
+    validation_iterator = data_loader(cfg.batch_size, mode="eval")
+    inputs = data_loader.next_element["images"]
+    labels = data_loader.next_element["labels"]
+    model.create_network(inputs, labels)
 
-    fd_train_acc, fd_loss, fd_val_acc = save_to()
+    loss, train_ops, summary_ops = model.train(cfg.num_gpus)
+
+    # Creating files, saver and summary writer to save training results
+    fd = save_to(is_training=True)
+    summary_writer = tf.summary.FileWriter(cfg.logdir)
+    summary_writer.add_graph(tf.get_default_graph())
+    saver = tf.train.Saver(var_list=tf.trainable_variables(), max_to_keep=10)
+
+    # Setting up training session
+    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+    run_metadata = tf.RunMetadata()
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
-    with supervisor.managed_session(config=config) as sess:
-        print("\nNote: all of results will be saved to directory: " + cfg.results)
-        for epoch in range(cfg.epoch):
-            sys.stdout.write('Training for epoch ' + str(epoch) + '/' + str(cfg.epoch) + ':')
-            sys.stdout.flush()
-            if supervisor.should_stop():
-                print('supervisor stoped!')
-                break
-            for step in tqdm(range(num_tr_batch), total=num_tr_batch, ncols=70, leave=False, unit='b'):
-                start = step * cfg.batch_size
-                end = start + cfg.batch_size
-                global_step = epoch * num_tr_batch + step
 
-                if global_step % cfg.train_sum_freq == 0:
-                    _, loss, train_acc, summary_str = sess.run([model.train_op, model.loss, model.accuracy, model.train_summary])
-                    assert not np.isnan(loss), 'Something wrong! loss is nan...'
-                    supervisor.summary_writer.add_summary(summary_str, global_step)
+    with tf.Session(config=config) as sess:
+        training_handle = sess.run(training_iterator.string_handle())
+        validation_handle = sess.run(validation_iterator.string_handle())
+        init_op = tf.global_variables_initializer()
+        sess.run(init_op)
+        print("\nNote: all of results will be saved to directory: " + cfg.results_dir)
+        for step in range(1, cfg.num_steps):
+            start_time = time.time()
+            if step % cfg.train_sum_every == 0:
+                _, loss_val, train_acc, summary_str = sess.run([train_ops,
+                                                               loss,
+                                                               model.accuracy,
+                                                               summary_ops],
+                                                               feed_dict={data_loader.handle: training_handle})
+                tl = timeline.Timeline(run_metadata.step_stats)
+                ctf = tl.generate_chrome_trace_format()
+                out_path = os.path.join(cfg.results_dir, "timelines/timeline_%d.json" % step)
+                with open(out_path, "w") as f:
+                    f.write(ctf)
+                summary_writer.add_summary(summary_str, step)
+                fd["loss"].write("{:d},{:.4f}\n".format(step, loss_val))
+                fd["loss"].flush()
+                fd["train_acc"].write("{:d},{:.4f}\n".format(step, train_acc))
+                fd["train_acc"].flush()
+            else:
+                _, loss_val = sess.run([train_ops, loss], feed_dict={data_loader.handle: training_handle})
+                # assert not np.isnan(loss_val), 'Something wrong! loss is nan...'
 
-                    fd_loss.write(str(global_step) + ',' + str(loss) + "\n")
-                    fd_loss.flush()
-                    fd_train_acc.write(str(global_step) + ',' + str(train_acc / cfg.batch_size) + "\n")
-                    fd_train_acc.flush()
-                else:
-                    sess.run(model.train_op)
+            if step % cfg.val_sum_every == 0:
+                print("evaluating, it will take a while...")
+                sess.run(validation_iterator.initializer)
+                probs = []
+                targets = []
+                total_acc = 0
+                n = 0
+                while True:
+                    try:
+                        val_acc, prob, label = sess.run([model.accuracy, model.probs, labels], feed_dict={data_loader.handle: validation_handle})
+                        probs.append(prob)
+                        targets.append(label)
+                        total_acc += val_acc
+                        n += 1
+                    except tf.errors.OutOfRangeError:
+                        break
+                probs = np.concatenate(probs, axis=0)
+                targets = np.concatenate(targets, axis=0).reshape((-1, 1))
+                avg_acc = total_acc / n
+                path = os.path.join(os.path.join(cfg.results_dir, "activations"))
+                plot_activation(np.hstack((probs, targets)), step=step, save_to=path)
+                fd["val_acc"].write("{:d},{:.4f}\n".format(step, avg_acc))
+                fd["val_acc"].flush()
+            if step % cfg.save_ckpt_every == 0:
+                saver.save(sess,
+                           save_path=os.path.join(cfg.logdir, 'model.ckpt'),
+                           global_step=step)
 
-                if cfg.val_sum_freq != 0 and (global_step) % cfg.val_sum_freq == 0:
-                    val_acc = 0
-                    prob = np.zeros((num_val_batch * cfg.batch_size, num_label))
-                    for i in range(num_val_batch):
-                        start = i * cfg.batch_size
-                        end = start + cfg.batch_size
-                        acc, prob[start:end, :] = sess.run([model.accuracy, model.activation], {model.X: valX[start:end], model.labels: valY[start:end]})
-                        val_acc += acc
-                    val_acc = val_acc / (cfg.batch_size * num_val_batch)
-                    np.savetxt(cfg.results + '/activations_step_' + str(global_step) + '.txt', np.hstack((prob, Y)), fmt='%1.2f')
-                    fd_val_acc.write(str(global_step) + ',' + str(val_acc) + '\n')
-                    fd_val_acc.flush()
-
-            if (epoch + 1) % cfg.save_freq == 0:
-                supervisor.saver.save(sess, cfg.logdir + '/model_epoch_%04d_step_%02d' % (epoch, global_step))
-
-        fd_val_acc.close()
-        fd_train_acc.close()
-        fd_loss.close()
+            duration = time.time() - start_time
+            log_str = ' step: {:d}, loss: {:.3f}, time: {:.3f} sec/step' \
+                      .format(step, loss_val, duration)
+            print(log_str)
 
 
-def evaluation(model, supervisor, num_label):
-    teX, teY, num_te_batch = load_data(cfg.dataset, cfg.batch_size, is_training=False)
-    fd_test_acc = save_to()
-    with supervisor.managed_session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
-        supervisor.saver.restore(sess, tf.train.latest_checkpoint(cfg.logdir))
+def evaluate(model, data_loader):
+    # Setting up model
+    test_iterator = data_loader(cfg.batch_size, mode="test")
+    inputs = data_loader.next_element["images"]
+    labels = data_loader.next_element["labels"]
+    model.create_network(inputs, labels)
+
+    # Create files to save evaluating results
+    fd = save_to(is_training=False)
+    saver = tf.train.Saver()
+
+    config = tf.ConfigProto(allow_soft_placement=True)
+    config.gpu_options.allow_growth = True
+    with tf.Session(config=config) as sess:
+        test_handle = sess.run(test_iterator.string_handle())
+        saver.restore(sess, tf.train.latest_checkpoint(cfg.logdir))
         tf.logging.info('Model restored!')
 
-        test_acc = 0
-        prob = np.zeros((num_te_batch * cfg.batch_size, num_label))
-        for i in tqdm(range(num_te_batch), total=num_te_batch, ncols=70, leave=False, unit='b'):
-            start = i * cfg.batch_size
-            end = start + cfg.batch_size
-            acc, prob[start:end, :] = sess.run([model.accuracy, model.activation], {model.X: teX[start:end], model.labels: teY[start:end]})
-            test_acc += acc
-        test_acc = test_acc / (cfg.batch_size * num_te_batch)
-        np.savetxt(cfg.results + '/prob_test.txt', prob, fmt='%1.2f')
-        print('Classification probability for each category has been saved to ' + cfg.results + '/prob_test.txt')
-        fd_test_acc.write(str(test_acc))
-        fd_test_acc.close()
-        print('Test accuracy has been saved to ' + cfg.results + '/test_accuracy.txt')
+        probs = []
+        targets = []
+        total_acc = 0
+        n = 0
+        while True:
+            try:
+                test_acc, prob, label = sess.run([model.accuracy, model.activation, labels], feed_dict={data_loader.handle: test_handle})
+                probs.append(prob)
+                targets.append(label)
+                total_acc += test_acc
+                n += 1
+            except:
+                break
+        probs = np.concatenate(probs, axis=0)
+        targets = np.concatenate(targets, axis=0).reshape((-1, 1))
+        avg_acc = total_acc / n
+        out_path = os.path.join(cfg.results_dir, 'prob_test.txt')
+        np.savetxt(out_path, np.hstack(probs, targets), fmt='%1.2f')
+        print('Classification probability for each category has been saved to ' + out_path)
+        fd["test_acc"].write(str(avg_acc))
+        fd["test_acc"].close()
+        out_path = os.path.join(cfg.results_dir, 'test_accuracy.txt')
+        print('Test accuracy has been saved to ' + out_path)
 
 
 def main(_):
-    if cfg.dataset == 'mnist' or cfg.dataset == 'fashion-mnist':
-        tf.logging.info(' Loading Graph...')
-        num_label = 10
-        model = CapsNet(height=28, width=28, channels=1, num_label=10)
-    elif cfg.dataset == 'smallNORB':
-        model = CapsNet(height=32, width=32, channels=3, num_label=5)
-        num_label = 5
-    tf.logging.info(' Graph loaded')
+    model_list = ['baseline', 'vectorCapsNet', 'matrixCapsNet', 'convCapsNet']
 
-    sv = tf.train.Supervisor(graph=model.graph, logdir=cfg.logdir, save_model_secs=0)
-
-    if cfg.is_training:
-        tf.logging.info(' Start trainging...')
-        train(model, sv, num_label)
-        tf.logging.info('Training done')
+    # Deciding which model to use
+    if cfg.model == 'baseline':
+        model = import_module(cfg.model).Model
+    elif cfg.model in model_list:
+        model = import_module(cfg.model).CapsNet
     else:
-        evaluation(model, sv, num_label)
+        raise Exception('Unsupported model, please check the name of model:', cfg.model)
+
+    # Deciding which dataset to use
+    if cfg.dataset == 'mnist' or cfg.dataset == 'fashion-mnist':
+        height = 28
+        width = 28
+        channels = 1
+        num_label = 10
+    elif cfg.dataset == 'smallNORB':
+        num_label = 5
+        height = 32
+        width = 32
+        channels = 1
+
+    # Initializing model and data loader
+    net = model(height=height, width=width, channels=channels, num_label=num_label)
+    dataset = "capslayer.data.datasets." + cfg.dataset
+    data_loader = import_module(dataset).DataLoader(path=cfg.data_dir,
+                                                    splitting=cfg.splitting,
+                                                    num_works=cfg.num_works)
+
+    # Deciding to train or evaluate model
+    if cfg.is_training:
+        train(net, data_loader)
+    else:
+        evaluate(net, data_loader)
+
 
 if __name__ == "__main__":
-    model = 'vectorCapsNet'
-    if model == 'vectorCapsNet':
-        from vectorCapsNet import CapsNet
-    elif model == 'matrixCapsNet':
-        from matrixCapsNet import CapsNet
-    else:
-        raise Exception('Unsupported model, please check the name of model:', model)
     tf.app.run()
