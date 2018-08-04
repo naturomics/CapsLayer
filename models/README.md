@@ -4,7 +4,7 @@ This module contains a number of different models which are already public:
 
 The [dynamic routing CapsNet](https://arxiv.org/abs/1710.09829)
 
-The [EM routing matrix CapsNet](https://arxiv.org/abs/1710.09829)
+The [EM routing matrix CapsNet](https://openreview.net/pdf?id=HJWLfGWRb)
 
 To use these models, please follow the following instructions
 
