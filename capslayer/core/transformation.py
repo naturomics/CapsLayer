@@ -35,7 +35,7 @@ def transforming(inputs, num_outputs, out_caps_dims, name=None):
     name = "transforming" if name is None else name
     with tf.variable_scope(name) as scope:
         input_shape = cl.shape(inputs)
-        prefix_shape = [1] + input_shape[1:-2] + [num_outputs]
+        prefix_shape = [1 for i in range(len(input_shape) - 3)] + input_shape[-3:-2] + [num_outputs]
         in_caps_dims = input_shape[-2:]
         if in_caps_dims[0] == out_caps_dims[1]:
             shape = prefix_shape + [out_caps_dims[0], 1, in_caps_dims[1]]
