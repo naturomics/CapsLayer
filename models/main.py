@@ -54,7 +54,7 @@ def save_to(is_training):
               "loss": fd_loss,
               "val_acc": fd_val_acc}
     else:
-        test_acc = os.path.jion(cfg.results, 'test_acc.csv')
+        test_acc = os.path.jion(cfg.results_dir, 'test_acc.csv')
         if os.path.exists(test_acc):
             os.remove(test_acc)
         fd_test_acc = open(test_acc, 'w')
@@ -172,18 +172,18 @@ def evaluate(model, data_loader):
         n = 0
         while True:
             try:
-                test_acc, prob, label = sess.run([model.accuracy, model.activation, labels], feed_dict={data_loader.handle: test_handle})
+                test_acc, prob, label = sess.run([model.accuracy, model.probs, labels], feed_dict={data_loader.handle: test_handle})
                 probs.append(prob)
                 targets.append(label)
                 total_acc += test_acc
                 n += 1
-            except:
+            except tf.errors.OutOfRangeError:
                 break
         probs = np.concatenate(probs, axis=0)
         targets = np.concatenate(targets, axis=0).reshape((-1, 1))
         avg_acc = total_acc / n
         out_path = os.path.join(cfg.results_dir, 'prob_test.txt')
-        np.savetxt(out_path, np.hstack(probs, targets), fmt='%1.2f')
+        np.savetxt(out_path, np.hstack((probs, targets)), fmt='%1.2f')
         print('Classification probability for each category has been saved to ' + out_path)
         fd["test_acc"].write(str(avg_acc))
         fd["test_acc"].close()
@@ -200,7 +200,7 @@ def main(_):
     elif cfg.model in model_list:
         model = import_module(cfg.model).CapsNet
     else:
-        raise Exception('Unsupported model, please check the name of model:', cfg.model)
+        raise ValueError('Unsupported model, please check the name of model:', cfg.model)
 
     # Deciding which dataset to use
     if cfg.dataset == 'mnist' or cfg.dataset == 'fashion-mnist':
