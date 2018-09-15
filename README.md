@@ -4,44 +4,43 @@ Capsule theory is a potential research proposed by Geoffrey E. Hinton et al, whe
 
 We expect that this theory will definitely contribute to Deep Learning Industry and we are excited about it. For the same reason we are proud to introduce **CapsLayer**, an advanced library for the Capsule Theory, integrating capsule-relevant technologies, providing relevant analysis tools, developing related application examples, and probably most important thing: promoting the development of capsule theory. 
 
-This library is based on [Tensorflow](https://www.tensorflow.org) and has a similar API with it but designed for capsule layer/model. We will soon be testing it with TensorFlow 1.4.x as well as TensorFlow 1.5.x which introduces several imperative modules such as Eager Execution etc.
+This library is based on [Tensorflow](https://www.tensorflow.org) and has a similar API with it but designed for capsule layers/models.
 
 
 # Features
 
 - TensorFlow-like API for building Neural Nets block:
 	- [x] capslayer.layers.conv2d
-	- [ ] capslayer.layers.conv1d
-	- [x] capslayer.layers.fully_connected
+	- [x] capslayer.layers.conv1d
+	- [x] capslayer.layers.fully_connected/dense
 	- [x] capslayer.layers.primaryCaps
 	- [x] capslayer.losses.spread_loss
-	- [ ] capslayer.losses.margin_loss
+	- [x] capslayer.losses.margin_loss
 
 - Datasets support:
   - [x] [MNIST](http://yann.lecun.com/exdb/mnist)
   - [x] [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist)
+  - [x] [CIFAR-10](http://www.cs.toronto.edu/~kriz/cifar.html)
   - [ ] [small NORB](https://cs.nyu.edu/~ylclab/data/norb-v1.0-small)
-  - [ ] [CIFAR-10](http://www.cs.toronto.edu/~kriz/cifar.html)
 
 - Capsule Nets Model examples:
 	- [x] [Dynamics routing between capsules](https://arxiv.org/abs/1710.09829)
-	- [ ] [matrix capsule with EM routing](https://openreview.net/pdf?id=HJWLfGWRb)(will be released soon)
+	- [x] [matrix capsule with EM routing](https://openreview.net/forum?id=HJWLfGWRb)
 
 - Algorithm support:
 	- [x] Routing-by-agreement: including EM Routing and Dynamic Routing
-	- [ ] [Non-local Neural Networks](https://arxiv.org/abs/1711.07971)
 
-If you want us to support more features, please tell us by opening an Issue or sending E-mail to naturomics.liao@gmail.com
+If you want us to support more features, let us know by opening Issues or sending E-mail to naturomics.liao@gmail.com
 
 
 # Documentation
 - [Installation](docs/installation.md)
-- [Tutorials](docs/tutorials.md)
+- [Tutorials](docs/tutorials.md) for running CapsNet on supported dataset (MNIST/CIFAR10 etc.) or your own dataset, or building your network with Capsule Layer
 - [Theoretical Analysis](docs/articles.md)
 
 
 # Contributions
-Feel free to send your pull request or open an issue
+Feel free to send your pull request or open issues
 
 
 # Citation
@@ -58,7 +57,7 @@ howpublished = {\url{http://naturomics.com/CapsLayer}},
 ```
 
 > **Note:**
-> We are considering to write a paper for this project, but before that, cite the above Bibtex entry.
+> We are considering to write a paper for this project, but before that, please cite the above Bibtex entry if you find it helps.
 
 
 # License

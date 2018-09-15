@@ -17,10 +17,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from . import mnist
-from . import fashion_mnist
-from . import cifar10
-from . import cifar100
+from .reader import DataLoader
 
-
-__all__ = ['mnist', 'fashion_mnist', 'cifar10', 'cifar100']
+__all__ = ["DataLoader"]
