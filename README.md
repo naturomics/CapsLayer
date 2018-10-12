@@ -9,7 +9,7 @@ This library is based on [Tensorflow](https://www.tensorflow.org) and has a simi
 
 # Features
 
-- TensorFlow-like API for building Neural Nets block, see [API docs](https://github.com/naturomics/CapsLayer/blob/master/docs/api_docs.md) for details:
+- TensorFlow-like API for building Neural Nets block, see [API docs](https://github.com/naturomics/CapsLayer/blob/master/docs/api_docs.md) for more details:
 	- [x] capslayer.layers.conv2d
 	- [x] capslayer.layers.conv1d
 	- [x] capslayer.layers.fully_connected/dense
