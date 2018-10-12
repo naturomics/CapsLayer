@@ -2,6 +2,9 @@ local*
 dist
 *.egg-info
 model*/data*
+*.swp
 *logdir*
 *__pycache__
 model*/results*
+*.pyc
+results*
