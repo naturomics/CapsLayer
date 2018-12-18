@@ -49,7 +49,7 @@ def conv2d(inputs,
         reuse: Boolean, whether to reuse the weights of a previous layer by the same name.
 
     Returns:
-        pose: A 6-D tensor with shape [batch_size, out_height, out_width, out_channesl] + out_caps_dims.
+        pose: A 6-D tensor with shape [batch_size, out_height, out_width, out_channels] + out_caps_dims.
         activation: A 4-D tensor with shape [batch_size, out_height, out_width, out_channels].
     """
 
@@ -128,7 +128,7 @@ def conv3d(inputs,
         reuse: Boolean, whether to reuse the weights of a previous layer by the same name.
 
     Returns:
-        pose: A 7-D tensor with shape [batch_size, out_depth, out_height, out_width, out_channesl] + out_caps_dims.
+        pose: A 7-D tensor with shape [batch_size, out_depth, out_height, out_width, out_channels] + out_caps_dims.
         activation: A 5-D tensor with shape [batch_size, out_depth, out_height, out_width, out_channels].
     """
 
@@ -195,7 +195,7 @@ def conv1d(inputs,
         strides: An integer or tuple/list of a single integer, specifying the stride length of the convolution.
 
     Returns:
-        pose: A 5-D tensor with shape [batch_size, out_width, out_channesl] + out_caps_dims.
+        pose: A 5-D tensor with shape [batch_size, out_width, out_channels] + out_caps_dims.
         activation: A 3-D tensor with shape [batch_size, out_width, out_channels].
 
     """
