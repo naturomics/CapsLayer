@@ -20,7 +20,11 @@ from __future__ import print_function
 
 import os
 import numpy as np
-import tensorflow as tf
+try:
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
+except:
+    import tensorflow as tf
 from tensorflow.python.keras.utils.data_utils import get_file
 from tensorflow.python.keras.datasets.cifar import load_batch
 

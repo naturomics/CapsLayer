@@ -25,7 +25,11 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import tensorflow as tf
+try:
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
+except:
+    import tensorflow as tf
 
 from capslayer.data.datasets.cifar10.writer import tfrecord_runner
 
