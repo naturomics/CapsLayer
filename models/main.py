@@ -54,7 +54,7 @@ def save_to(is_training):
               "loss": fd_loss,
               "val_acc": fd_val_acc}
     else:
-        test_acc = os.path.jion(cfg.results_dir, 'test_acc.csv')
+        test_acc = os.path.join(cfg.results_dir, 'test_acc.csv')
         if os.path.exists(test_acc):
             os.remove(test_acc)
         fd_test_acc = open(test_acc, 'w')
