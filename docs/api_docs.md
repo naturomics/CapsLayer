@@ -53,7 +53,7 @@ A 2D convolutional capsule layer.
 
 #### Returns:
 
-* <b>`pose`</b>: A 6-D tensor with shape [batch_size, out_height, out_width, out_channesl] + out_caps_dims.
+* <b>`pose`</b>: A 6-D tensor with shape [batch_size, out_height, out_width, out_channels] + out_caps_dims.
 * <b>`activation`</b>: A 4-D tensor with shape [batch_size, out_height, out_width, out_channels].
 
 ### `cl.layers.conv3d(inputs, activation, filters, out_caps_dims, kernel_size, strides, padding="valid", routing_method="EMRouting", name=None, reuse=None)`:
@@ -75,7 +75,7 @@ A 3D convolutional capsule layer.
 
 #### Returns:
 
-* <b>`pose`</b>: A 7-D tensor with shape [batch_size, out_depth, out_height, out_width, out_channesl] + out_caps_dims.
+* <b>`pose`</b>: A 7-D tensor with shape [batch_size, out_depth, out_height, out_width, out_channels] + out_caps_dims.
 * <b>`activation`</b>: A 5-D tensor with shape [batch_size, out_depth, out_height, out_width, out_channels].
 
 

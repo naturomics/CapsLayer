@@ -2,7 +2,7 @@
 CapsLayer is build on the top of TensorFlow with its python API, so you need python to be installed first. 
 
 ## Step 1: Install dependencies
-- TesorFlow 
+- TensorFlow 
 
 Follow the [Tensorflow installation instructions](https://www.tensorflow.org/install)([for China](https://tensorflow.google.cn/install/))
 

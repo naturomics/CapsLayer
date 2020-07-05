@@ -22,7 +22,7 @@ run `python models/main.py --helpfull` to print helps.
 **Step 3.** Visualize the results with `tensorboard` or tools provided by this project. The following is an example plotted with our `cl.plotlib` tool:
 ![activation_map](assets/results_mnist_vecCapsNetactivations.gif)
 
-**Step 4.** Test your model using the same command line as `step 2` but with paremeter `--nois_training`, like this:
+**Step 4.** Test your model using the same command line as `step 2` but with parameter `--nois_training`, like this:
 ```
 $ python models/main.py --dataset <name_of_dataset> --nois_training False [--batch_size=32, ...]
 ```
