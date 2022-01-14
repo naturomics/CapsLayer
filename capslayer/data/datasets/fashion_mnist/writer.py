@@ -33,7 +33,7 @@ FASHION_MNIST_FILES = {
 
 def load_fashion_mnist(path, split):
     split = split.lower()
-    image_file, label_file = [os.path.join(path, file_name) for file_name in MNIST_FILES[split]]
+    image_file, label_file = [os.path.join(path, file_name) for file_name in FASHION_MNIST_FILES[split]]
 
     with open(image_file) as fd:
         images = np.fromfile(file=fd, dtype=np.uint8)
