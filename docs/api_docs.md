@@ -92,7 +92,7 @@ A 1D convolutional capsule layer (e.g. temporal convolution).
 
 #### Returns:
 
-* <b>`pose`</b>: A 5-D tensor with shape [batch_size, out_width, out_channesl] + out_caps_dims.
+* <b>`pose`</b>: A 5-D tensor with shape [batch_size, out_width, out_channels] + out_caps_dims.
 * <b>`activation`</b>: A 3-D tensor with shape [batch_size, out_width, out_channels].
 
 
